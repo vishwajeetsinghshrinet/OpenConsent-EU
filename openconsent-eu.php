@@ -146,3 +146,37 @@ final class OpenConsent_EU_GitHub_Updater
 }
 
 OpenConsent_EU_GitHub_Updater::init();
+
+final class OpenConsent_EU_Preview_Banner
+{
+	public static function init()
+	{
+		if (is_admin()) {
+			return;
+		}
+
+		add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_styles'));
+		add_action('wp_footer', array(__CLASS__, 'render'));
+	}
+
+	public static function enqueue_styles()
+	{
+		wp_enqueue_style(
+			'openconsent-eu-preview',
+			plugins_url('assets/css/consent-preview.css', __FILE__),
+			array(),
+			'0.1.0'
+		);
+	}
+
+	public static function render()
+	{
+		echo '<aside class="oce-preview" role="note" aria-labelledby="oce-preview-title">';
+		echo '<div class="oce-preview__eyebrow"><span class="oce-preview__indicator" aria-hidden="true"></span>Site preview</div>';
+		echo '<h2 class="oce-preview__title" id="oce-preview-title">OpenConsent EU</h2>';
+		echo '<p class="oce-preview__message">This card confirms the plugin is active. Consent choices and cookie blocking are not enabled yet.</p>';
+		echo '</aside>';
+	}
+}
+
+OpenConsent_EU_Preview_Banner::init();

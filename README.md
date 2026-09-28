@@ -8,6 +8,8 @@ OpenConsent EU is a WordPress cookie consent plugin designed to help websites im
 
 ## Features
 
+The current build displays a static, non-dismissible preview card only. It does not collect consent or block cookies yet.
+
 - 🍪 Cookie consent banner
 - 🇪🇺 Designed for EU privacy requirements
 - 🇮🇪 Ireland-friendly configuration
