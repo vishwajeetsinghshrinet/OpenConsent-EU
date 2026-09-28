@@ -10,6 +10,7 @@ final class OCE_Settings
     const OPTION_CATEGORIES = 'openconsent_eu_categories';
     const OPTION_APPEARANCE = 'openconsent_eu_appearance';
     const OPTION_GENERAL = 'openconsent_eu_general';
+    const OPTION_VISITOR_INFORMATION = 'openconsent_eu_visitor_information';
 
     private static $font_families = array(
         'sans-serif' => 'sans-serif',
@@ -31,6 +32,7 @@ final class OCE_Settings
         self::register_option('oce_categories_settings', self::OPTION_CATEGORIES, 'sanitize_categories', OCE_Categories::defaults());
         self::register_option('oce_appearance_settings', self::OPTION_APPEARANCE, 'sanitize_appearance', self::default_appearance());
         self::register_option('oce_general_settings', self::OPTION_GENERAL, 'sanitize_general', self::default_general());
+        self::register_option('oce_visitor_information_settings', self::OPTION_VISITOR_INFORMATION, 'sanitize_visitor_information', self::default_visitor_information());
     }
 
     private static function register_option($group, $option, $sanitizer, $default)
@@ -48,18 +50,20 @@ final class OCE_Settings
 
     public static function add_settings_page()
     {
-        add_options_page(
+        add_menu_page(
             'OpenConsent EU',
             'OpenConsent EU',
             'manage_options',
             'openconsent-eu',
-            array(__CLASS__, 'render_settings_page')
+            array(__CLASS__, 'render_settings_page'),
+            OCE_PLUGIN_URL . 'assets/images/openconsent-eu-icon.png',
+            81
         );
     }
 
     public static function enqueue_admin_styles($hook)
     {
-        if ('settings_page_openconsent-eu' === $hook) {
+        if ('toplevel_page_openconsent-eu' === $hook) {
             wp_enqueue_style('openconsent-eu-admin', plugins_url('assets/css/admin.css', OCE_PLUGIN_FILE), array(), OCE_VERSION);
         }
     }
@@ -142,19 +146,69 @@ final class OCE_Settings
         );
     }
 
+    public static function sanitize_visitor_information($input)
+    {
+        $input = is_array($input) ? $input : array();
+        $defaults = self::default_visitor_information();
+        $resources = isset($input['resources']) && is_array($input['resources']) ? $input['resources'] : array();
+        $clean_resources = array();
+
+        for ($index = 0; $index < 3; $index++) {
+            $resource = isset($resources[$index]) && is_array($resources[$index]) ? $resources[$index] : array();
+            $clean_resources[] = array(
+                'label' => isset($resource['label']) && is_string($resource['label'])
+                    ? sanitize_text_field(wp_unslash($resource['label']))
+                    : '',
+                'url' => isset($resource['url']) && is_string($resource['url'])
+                    ? esc_url_raw(wp_unslash($resource['url']))
+                    : '',
+            );
+        }
+
+        return array(
+            'enabled' => isset($input['enabled']) && in_array($input['enabled'], array('1', 1, true), true),
+            'heading' => isset($input['heading']) && is_string($input['heading'])
+                ? sanitize_text_field(wp_unslash($input['heading']))
+                : $defaults['heading'],
+            'intro' => isset($input['intro']) && is_string($input['intro'])
+                ? sanitize_textarea_field(wp_unslash($input['intro']))
+                : $defaults['intro'],
+            'resources' => $clean_resources,
+            'show_about' => isset($input['show_about']) && in_array($input['show_about'], array('1', 1, true), true),
+        );
+    }
+
     private static function sanitize_script_handles($value)
     {
         $valid_categories = OCE_Categories::optional_ids();
         $lines = preg_split('/\r\n|\r|\n/', sanitize_textarea_field($value));
         $handles = array();
+        $invalid_lines = array();
 
         foreach ($lines as $line) {
+            if ('' === trim($line)) {
+                continue;
+            }
+
             $parts = array_map('trim', explode(':', $line, 2));
             if (2 !== count($parts) || 'openconsent-eu-banner' === $parts[0] || !preg_match('/^[a-zA-Z0-9_-]+$/', $parts[0]) || !in_array($parts[1], $valid_categories, true)) {
+                $invalid_lines[] = trim($line);
                 continue;
             }
 
             $handles[] = $parts[0] . ':' . $parts[1];
+        }
+
+        if ($invalid_lines && function_exists('add_settings_error')) {
+            add_settings_error(
+                self::OPTION_GENERAL,
+                'invalid_script_handles',
+                sprintf(
+                    __('Some script mappings were ignored because they are invalid. Use a registered script handle and an optional category (%s).', 'openconsent-eu'),
+                    implode(', ', OCE_Categories::optional_ids())
+                ),
+                'error'
+            );
         }
 
         return implode("\n", array_unique($handles));
@@ -171,6 +225,7 @@ final class OCE_Settings
             'categories' => __('Categories', 'openconsent-eu'),
             'appearance' => __('Appearance', 'openconsent-eu'),
             'general' => __('General', 'openconsent-eu'),
+            'visitor_information' => __('Visitor information', 'openconsent-eu'),
         );
         $tab = isset($_GET['tab']) ? sanitize_key(wp_unslash($_GET['tab'])) : 'content';
         $active_tab = isset($tabs[$tab]) ? $tab : 'content';
@@ -178,6 +233,7 @@ final class OCE_Settings
         $categories = OCE_Categories::get_all();
         $appearance = self::get_appearance();
         $general = self::get_general();
+        $visitor_information = self::get_visitor_information();
         require OCE_PLUGIN_DIR . 'admin/views/settings-page.php';
     }
 
@@ -213,6 +269,25 @@ final class OCE_Settings
     public static function get_general()
     {
         return wp_parse_args(get_option(self::OPTION_GENERAL, array()), self::default_general());
+    }
+
+    public static function get_visitor_information()
+    {
+        $defaults = self::default_visitor_information();
+        $saved = get_option(self::OPTION_VISITOR_INFORMATION, array());
+        $saved = is_array($saved) ? $saved : array();
+        $information = wp_parse_args($saved, $defaults);
+        $resources = isset($saved['resources']) && is_array($saved['resources']) ? $saved['resources'] : array();
+        $information['resources'] = array();
+
+        for ($index = 0; $index < 3; $index++) {
+            $resource = isset($resources[$index]) && is_array($resources[$index])
+                ? $resources[$index]
+                : $defaults['resources'][$index];
+            $information['resources'][] = wp_parse_args($resource, array('label' => '', 'url' => ''));
+        }
+
+        return $information;
     }
 
     public static function font_families()
@@ -252,4 +327,26 @@ final class OCE_Settings
             'google_consent_mode' => false,
         );
     }
+
+    private static function default_visitor_information()
+    {
+        return array(
+            'enabled' => true,
+            'heading' => __('Learn about your privacy rights', 'openconsent-eu'),
+            'intro' => __('This information is provided for general guidance. Your privacy choices on this website are controlled above. For official information about data protection rights in the European Union, visit the links below.', 'openconsent-eu'),
+            'resources' => array(
+                array(
+                    'label' => __('Your data-protection rights in the EU', 'openconsent-eu'),
+                    'url' => 'https://commission.europa.eu/law/law-topic/data-protection/information-individuals_en',
+                ),
+                array(
+                    'label' => __('Data protection and online privacy in the EU', 'openconsent-eu'),
+                    'url' => 'https://europa.eu/youreurope/citizens/consumers/internet-telecoms/data-protection-online-privacy/index_en.htm',
+                ),
+                array('label' => '', 'url' => ''),
+            ),
+            'show_about' => false,
+        );
+    }
+
 }

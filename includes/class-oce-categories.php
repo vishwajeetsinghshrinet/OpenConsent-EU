@@ -49,15 +49,22 @@ final class OCE_Categories
         $defaults = self::defaults();
         $saved = get_option(OCE_Settings::OPTION_CATEGORIES, array());
         $saved = is_array($saved) ? $saved : array();
+        $mapped_categories = array();
+        foreach (preg_split('/\r\n|\r|\n/', OCE_Settings::get_general()['script_handles']) as $line) {
+            $parts = array_map('trim', explode(':', $line, 2));
+            if (2 === count($parts)) {
+                $mapped_categories[$parts[1]] = true;
+            }
+        }
 
         foreach ($defaults as $key => $category) {
-            if (!isset($saved[$key]) || !is_array($saved[$key])) {
-                continue;
+            if (isset($saved[$key]) && is_array($saved[$key])) {
+                $defaults[$key]['label'] = isset($saved[$key]['label']) ? $saved[$key]['label'] : $category['label'];
+                $defaults[$key]['description'] = isset($saved[$key]['description']) ? $saved[$key]['description'] : $category['description'];
             }
 
-            $defaults[$key]['label'] = isset($saved[$key]['label']) ? $saved[$key]['label'] : $category['label'];
-            $defaults[$key]['description'] = isset($saved[$key]['description']) ? $saved[$key]['description'] : $category['description'];
-            $defaults[$key]['enabled'] = $category['required'] || !empty($saved[$key]['enabled']);
+            $defaults[$key]['script_mapped'] = isset($mapped_categories[$key]);
+            $defaults[$key]['enabled'] = $category['required'] || (isset($saved[$key]['enabled']) && !empty($saved[$key]['enabled'])) || isset($mapped_categories[$key]);
         }
 
         return $defaults;

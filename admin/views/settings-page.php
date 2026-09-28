@@ -11,7 +11,7 @@
     <nav class="nav-tab-wrapper" aria-label="<?php esc_attr_e('Plugin settings', 'openconsent-eu'); ?>">
         <?php foreach ($tabs as $tab_key => $tab_label): ?>
             <a class="nav-tab <?php echo $active_tab === $tab_key ? 'nav-tab-active' : ''; ?>"
-                href="<?php echo esc_url(add_query_arg(array('page' => 'openconsent-eu', 'tab' => $tab_key), admin_url('options-general.php'))); ?>"><?php echo esc_html($tab_label); ?></a>
+                href="<?php echo esc_url(add_query_arg(array('page' => 'openconsent-eu', 'tab' => $tab_key), admin_url('admin.php'))); ?>"><?php echo esc_html($tab_label); ?></a>
         <?php endforeach; ?>
     </nav>
     <?php settings_errors(); ?>
@@ -26,6 +26,7 @@
             'categories' => 'categories.php',
             'appearance' => 'appearance.php',
             'general' => 'general.php',
+            'visitor_information' => 'visitor-information.php',
         );
         require OCE_PLUGIN_DIR . 'admin/views/tabs/' . $view_files[$active_tab];
         ?>

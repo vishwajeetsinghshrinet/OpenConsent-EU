@@ -9,6 +9,7 @@ final class OCE_Banner
     public static function init()
     {
         add_action('wp_head', array(__CLASS__, 'output_google_consent_defaults'), 1);
+        add_action('wp_head', array(__CLASS__, 'output_early_consent_state'), 2);
         add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_styles'));
         add_action('wp_footer', array(__CLASS__, 'render'));
     }
@@ -21,6 +22,17 @@ final class OCE_Banner
 
         $script = "window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){window.dataLayer.push(arguments);};window.gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',functionality_storage:'denied',personalization_storage:'denied',security_storage:'granted'});";
         wp_print_inline_script_tag($script, array('id' => 'openconsent-eu-consent-default'));
+    }
+
+    public static function output_early_consent_state()
+    {
+        if (is_admin()) {
+            return;
+        }
+
+        $consent_version = wp_json_encode(OCE_Consent::get_public_config()['consentVersion']);
+        $script = "try{var c=JSON.parse(localStorage.getItem('openconsent-eu-consent')||'null');if(c&&c.version===$consent_version&&Number.isFinite(c.expiresAt)&&c.expiresAt>Date.now()&&c.categories&&typeof c.categories==='object'){document.documentElement.classList.add('oce-consent-recorded');}}catch(e){}";
+        wp_print_inline_script_tag($script, array('id' => 'openconsent-eu-early-state'));
     }
 
     public static function enqueue_styles()
@@ -58,6 +70,7 @@ final class OCE_Banner
     {
         $content = OCE_Settings::get_content();
         $categories = OCE_Categories::get_all();
+        $visitor_information = OCE_Settings::get_visitor_information();
         $appearance = OCE_Settings::get_appearance();
         $policy_url = !empty($content['policy_url']) ? esc_url($content['policy_url']) : '';
         ?>
@@ -114,6 +127,29 @@ final class OCE_Banner
                             </div>
                         <?php endforeach; ?>
                     </div>
+                    <?php if ($visitor_information['enabled']): ?>
+                        <details class="oce-privacy-info">
+                            <summary><?php echo esc_html($visitor_information['heading']); ?></summary>
+                            <div class="oce-privacy-info__body">
+                                <p><?php echo esc_html($visitor_information['intro']); ?></p>
+                                <ul>
+                                    <?php foreach ($visitor_information['resources'] as $resource): ?>
+                                        <?php
+                                        $resource_url = isset($resource['url']) && is_string($resource['url']) ? esc_url($resource['url']) : '';
+                                        $resource_label = isset($resource['label']) && is_string($resource['label']) ? $resource['label'] : '';
+                                        if (!$resource_url || '' === trim($resource_label)) {
+                                            continue;
+                                        }
+                                        ?>
+                                        <li><a href="<?php echo $resource_url; ?>" target="_blank"
+                                                rel="noopener noreferrer"><?php echo esc_html($resource_label); ?><span
+                                                    class="oce-screen-reader-text"><?php esc_html_e(' (opens in a new tab)', 'openconsent-eu'); ?></span></a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        </details>
+                    <?php endif; ?>
                     <div class="oce-actions oce-dialog__actions">
                         <button class="oce-button oce-button--primary" type="button"
                             data-oce-save><?php esc_html_e('Save my choices', 'openconsent-eu'); ?></button>
@@ -124,6 +160,14 @@ final class OCE_Banner
                     </div>
                     <button class="oce-withdraw" type="button"
                         data-oce-withdraw><?php esc_html_e('Withdraw optional consent', 'openconsent-eu'); ?></button>
+                    <?php if ($visitor_information['show_about']): ?>
+                        <p class="oce-attribution">
+                            <?php esc_html_e('Consent controls provided by OpenConsent EU', 'openconsent-eu'); ?> <a
+                                href="https://github.com/vishwajeetsinghshrinet/OpenConsent-EU" target="_blank"
+                                rel="noopener noreferrer"><?php esc_html_e('About OpenConsent EU', 'openconsent-eu'); ?><span
+                                    class="oce-screen-reader-text"><?php esc_html_e(' (opens in a new tab)', 'openconsent-eu'); ?></span></a>
+                        </p>
+                    <?php endif; ?>
                     <p class="oce-error" data-oce-save-error role="status" aria-live="polite" hidden></p>
                 </div>
             </dialog>
