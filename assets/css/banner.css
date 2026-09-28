@@ -178,6 +178,16 @@
   font-weight: 700;
 }
 
+.oce-widget[data-theme="dark"] .oce-settings-link {
+  color: #102a27;
+}
+
+@media (prefers-color-scheme: dark) {
+  .oce-widget[data-theme="system"] .oce-settings-link {
+    color: #102a27;
+  }
+}
+
 .oce-dialog {
   position: fixed;
   inset: 0 24px 24px auto;

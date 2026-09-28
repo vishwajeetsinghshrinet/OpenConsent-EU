@@ -14,6 +14,7 @@
                 href="<?php echo esc_url(add_query_arg(array('page' => 'openconsent-eu', 'tab' => $tab_key), admin_url('options-general.php'))); ?>"><?php echo esc_html($tab_label); ?></a>
         <?php endforeach; ?>
     </nav>
+    <?php settings_errors(); ?>
     <p class="description">
         <?php esc_html_e('Your configuration is saved in this WordPress site. Describe your actual cookies and services; this plugin does not determine legal compliance for you.', 'openconsent-eu'); ?>
     </p>

@@ -78,12 +78,16 @@ Additional non-essential cookies or technologies that do not fit another categor
 
 Administrators can map WordPress script handles to optional categories under **Settings → OpenConsent EU → General**. Each line uses `handle:category` format, for example:
 
-Example:
-
+```text
 site_analytics:analytics
 advertising_pixel:marketing
+```
 
 Only mapped scripts registered through WordPress are handled. The plugin does not detect arbitrary hard-coded tags in themes, page builders, or remote content; review the site's actual integrations and test its script behavior.
+
+## Google Consent Mode
+
+Google Consent Mode v2 signals are optional and disabled by default. When enabled, the plugin emits denied defaults in `wp_head`, then maps visitor choices for analytics, preferences, and marketing to Google consent signals. Enable it only when those defaults run before your Google tags. This does not install or configure Google tags.
 
 ## Admin Settings
 
@@ -103,17 +107,6 @@ Available appearance options include:
 
 - Font family
 - Font size
-- Heading size
-- Text color
-- Background color
-- Button colors
-- Button text colors
-- Border color
-- Border radius
-- Card width
-- Padding
-- Shadow
-- Banner position
 - Editable light/dark background, text, accent, and border colors
 - Device-based color mode
 
@@ -130,6 +123,7 @@ The plugin:
 - Does not track visitors for its own purposes
 - Stores visitor choices in browser local storage; choices are not sent to the plugin's server
 - Does not automatically discover cookies or verify that a site's configuration is complete
+- Does not create a server-side consent audit trail in this browser-local storage mode
 
 ## Developer Features
 
@@ -156,12 +150,14 @@ OpenConsent EU checks the public GitHub repository for its latest stable release
 
 To publish an update, create a published, non-prerelease GitHub release with a version tag such as:
 
+```text
 v1.0.0
 v1.0.1
 v1.1.0
 v2.0.0
+```
 
-Use a tag that matches the release version (for example, `v0.1.1` for version `0.1.1`). WordPress downloads GitHub's generated source archive for that release.
+Use a tag that matches the release version (for example, `v1.0.1` for version `1.0.1`). WordPress downloads GitHub's generated source archive for that release.
 
 Updates require the repository to remain public. Only official project releases should be trusted and installed.
 

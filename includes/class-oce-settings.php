@@ -88,7 +88,7 @@ final class OCE_Settings
             $categories[$key] = array(
                 'label' => isset($value['label']) && is_string($value['label']) ? sanitize_text_field(wp_unslash($value['label'])) : $default['label'],
                 'description' => isset($value['description']) && is_string($value['description']) ? sanitize_textarea_field(wp_unslash($value['description'])) : $default['description'],
-                'enabled' => $default['required'] || !empty($value['enabled']),
+                'enabled' => $default['required'] || (isset($value['enabled']) && in_array($value['enabled'], array('1', 1, true), true)),
             );
         }
 
@@ -101,10 +101,13 @@ final class OCE_Settings
         $defaults = self::default_appearance();
         $mode = isset($input['mode']) && is_string($input['mode']) ? $input['mode'] : '';
         $font_family = isset($input['font_family']) && is_string($input['font_family']) ? $input['font_family'] : '';
+        $font_size = isset($input['font_size']) && is_scalar($input['font_size']) && is_numeric($input['font_size'])
+            ? min(32, max(12, absint($input['font_size'])))
+            : $defaults['font_size'];
         $appearance = array(
             'mode' => in_array($mode, array('light', 'dark', 'system'), true) ? $mode : $defaults['mode'],
             'font_family' => isset(self::$font_families[$font_family]) ? $font_family : $defaults['font_family'],
-            'font_size' => isset($input['font_size']) ? min(32, max(12, absint($input['font_size']))) : $defaults['font_size'],
+            'font_size' => $font_size,
         );
 
         $input_colors = isset($input['colors']) && is_array($input['colors']) ? $input['colors'] : array();
@@ -123,12 +126,17 @@ final class OCE_Settings
     {
         $input = is_array($input) ? $input : array();
         $defaults = self::default_general();
-        $version = isset($input['consent_version']) ? sanitize_text_field(wp_unslash($input['consent_version'])) : $defaults['consent_version'];
+        $version = isset($input['consent_version']) && is_string($input['consent_version'])
+            ? sanitize_text_field(wp_unslash($input['consent_version']))
+            : $defaults['consent_version'];
         $version = preg_replace('/[^a-zA-Z0-9._-]/', '', $version);
+        $expiry_days = isset($input['expiry_days']) && is_scalar($input['expiry_days']) && is_numeric($input['expiry_days'])
+            ? min(365, max(1, absint($input['expiry_days'])))
+            : $defaults['expiry_days'];
 
         return array(
             'consent_version' => '' !== $version ? $version : $defaults['consent_version'],
-            'expiry_days' => isset($input['expiry_days']) ? min(365, max(1, absint($input['expiry_days']))) : $defaults['expiry_days'],
+            'expiry_days' => $expiry_days,
             'script_handles' => isset($input['script_handles']) && is_string($input['script_handles']) ? self::sanitize_script_handles(wp_unslash($input['script_handles'])) : '',
             'google_consent_mode' => isset($input['google_consent_mode']) && in_array($input['google_consent_mode'], array('1', 1, true), true),
         );
@@ -217,7 +225,7 @@ final class OCE_Settings
         return array(
             'label' => __('Your privacy matters', 'openconsent-eu'),
             'title' => __('Choose your cookie settings', 'openconsent-eu'),
-            'message' => __('This site uses optional cookies to understand site use and improve your experience. You can accept all, reject optional cookies, or choose by category. You can change your choice at any time.', 'openconsent-eu'),
+            'message' => __('Choose whether to allow the optional categories configured for this site. Necessary storage is always active. You can change or withdraw your choice at any time.', 'openconsent-eu'),
             'policy_url' => function_exists('get_privacy_policy_url') ? get_privacy_policy_url() : '',
         );
     }

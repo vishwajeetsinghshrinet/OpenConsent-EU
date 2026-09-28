@@ -109,6 +109,7 @@
   };
 
   const saveConsent = (choices) => {
+    const previousConsent = readConsent();
     const categories = {};
     Object.entries(config.categories).forEach(([id, category]) => {
       categories[id] = Boolean(category.required || choices[id]);
@@ -139,6 +140,16 @@
     dispatchConsent(consent);
     updateGoogleConsent(consent);
     if (persisted && dialog.open) closeDialog();
+
+    const revokedCategory =
+      previousConsent &&
+      Object.keys(previousConsent.categories).some(
+        (id) =>
+          previousConsent.categories[id] &&
+          !categories[id] &&
+          !config.categories[id]?.required,
+      );
+    if (persisted && revokedCategory) window.location.reload();
   };
 
   const openPreferences = () => {
@@ -182,7 +193,6 @@
     .querySelector("[data-oce-withdraw]")
     ?.addEventListener("click", () => {
       saveConsent({});
-      window.location.reload();
     });
 
   const currentConsent = readConsent();
