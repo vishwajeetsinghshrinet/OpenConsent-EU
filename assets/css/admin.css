@@ -1,0 +1,59 @@
+.oce-admin-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.oce-admin-heading img {
+  display: block;
+  border-radius: 8px;
+}
+
+.oce-admin-heading h1 {
+  margin: 0 0 4px;
+}
+
+.oce-admin-heading p {
+  margin: 0;
+}
+
+.oce-color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(90px, 1fr));
+  gap: 12px;
+  max-width: 520px;
+}
+
+.oce-color-grid label,
+.oce-category-fields label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.oce-color-grid input[type="color"] {
+  width: 52px;
+  height: 36px;
+  padding: 2px;
+}
+
+.oce-category-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.oce-category-fields {
+  display: grid;
+  gap: 8px;
+  max-width: 520px;
+}
+
+@media (max-width: 600px) {
+  .oce-color-grid {
+    grid-template-columns: repeat(2, minmax(90px, 1fr));
+  }
+}

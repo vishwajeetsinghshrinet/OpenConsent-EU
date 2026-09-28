@@ -6,46 +6,26 @@ Free. Open source. Privacy first.
 
 OpenConsent EU is a WordPress cookie consent plugin designed to help websites implement privacy-friendly cookie and tracking consent controls for visitors in the European Union, including Ireland.
 
-## Features
+## Current Features
 
-The current build displays a static, non-dismissible preview card only. It does not collect consent or block cookies yet.
+- Visitors can accept all offered categories, reject optional categories, or choose categories individually.
+- Necessary storage is always active. Optional categories start unselected and do not run until chosen.
+- Visitors can reopen **Cookie settings**, change their choice, or withdraw optional consent.
+- Choices are stored in the visitor's browser, not sent to this plugin's server. They expire after the configured period or when the consent version changes.
+- Administrators can edit banner copy, the privacy-information link, category names and purposes, and appearance under **Settings → OpenConsent EU**. Configuration is stored in the site's WordPress database.
+- Appearance settings include light, dark, or device-based color mode; editable light/dark palettes; a font selector; and a base font size limited to 12–32 px. The default font stack ends in `sans-serif`.
+- WordPress scripts explicitly mapped to an optional category are held until that category is allowed. This includes WordPress inline scripts associated with mapped handles.
+- Optional Google Consent Mode v2 signals can be enabled in General settings; the default is off.
+- The `openconsent_eu_categories` PHP filter allows developers to add or adjust categories. The browser dispatches an `openconsent:consent-changed` event when a choice changes.
+- GitHub release updates are offered through WordPress when a newer public release is available.
 
-- 🍪 Cookie consent banner
-- 🇪🇺 Designed for EU privacy requirements
-- 🇮🇪 Ireland-friendly configuration
-- 🔒 Blocks non-essential scripts until consent is given
-- ✅ Accept all cookies
-- ❌ Reject non-essential cookies
-- ⚙️ Manage cookie preferences
-- 📊 Separate consent categories:
-  - Necessary
-  - Preferences
-  - Analytics
-  - Marketing
-  - Other
+The interface uses vanilla CSS and JavaScript and does not require Bootstrap, jQuery, or a frontend framework.
 
-- 💾 Remembers the visitor's consent choice
-- 🔄 Supports consent withdrawal and preference changes
-- 🔢 Consent versioning
-- 🎨 Fully customizable banner appearance
-- 🖋️ Change font family
-- 🔠 Change font sizes
-- 🎨 Customize colors
-- 📐 Customize banner width, spacing, borders, and radius
-- 📱 Responsive design for mobile, tablet, and desktop
-- ♿ Accessibility-focused interface
-- 🚀 Lightweight frontend assets
-- 🧩 Developer-friendly hooks and JavaScript events
-- 🔐 No visitor IP address required for consent storage
-- 🚫 No advertising or tracking by OpenConsent EU
-- ☁️ No external SaaS account required
-- 💰 100% free
-- 🔓 Open source
-- 🔄 GitHub-based updates
+When enabled, Google Consent Mode starts with optional storage denied and maps analytics, preferences, and marketing choices to their corresponding Google signals. This sends consent signals; it does not install Google tags or configure Google Analytics for the site.
 
 ## Consent Management
 
-OpenConsent EU is designed around the principle that non-essential cookies and tracking technologies should not be activated before the visitor provides the appropriate consent.
+OpenConsent EU keeps optional WordPress-enqueued scripts configured in the plugin inactive until the visitor allows their mapped category. Optional choices are unselected until the visitor makes a choice.
 
 Visitors can:
 
@@ -55,7 +35,7 @@ Visitors can:
 - Change their preferences later
 - Withdraw previously given consent
 
-A persistent **Cookie Settings** option can remain available so visitors can change their choices at any time.
+A persistent **Cookie settings** control remains available after a choice. Withdrawing optional consent saves a necessary-only choice and reloads the page so mapped scripts do not run on the next page load. Scripts already executed may have set cookies that require separate site-specific deletion.
 
 ## Cookie Categories
 
@@ -96,44 +76,30 @@ Additional non-essential cookies or technologies that do not fit another categor
 
 ## Script Blocking
 
-OpenConsent EU can prevent configured non-essential scripts from executing until the required consent has been granted.
+Administrators can map WordPress script handles to optional categories under **Settings → OpenConsent EU → General**. Each line uses `handle:category` format, for example:
 
 Example:
 
-<script type="text/plain" data-cookie-category="analytics">
-    // Analytics code
-</script>
+site_analytics:analytics
+advertising_pixel:marketing
 
-The script can be activated only after the visitor provides the required consent.
+Only mapped scripts registered through WordPress are handled. The plugin does not detect arbitrary hard-coded tags in themes, page builders, or remote content; review the site's actual integrations and test its script behavior.
 
 ## Admin Settings
 
 The WordPress administrator can configure:
 
-- General settings
-- Consent categories
-- Cookies
-- Services
-- Scripts
-- Banner appearance
-- Typography
-- Colors
-- Buttons
-- Position
-- Size
-- Border radius
-- Shadows
-- Mobile behavior
-- Consent duration
-- Consent version
-- Advanced settings
-- Developer options
+- Banner wording and a privacy-information URL
+- Built-in category labels, purposes, and whether optional categories are offered
+- Light/dark/system color mode, palette colors, font family, and font size
+- Consent validity period and consent version
+- WordPress script handles and their consent categories
 
 ## Appearance Customization
 
 Administrators can customize the consent interface without editing theme files.
 
-Available options include:
+Available appearance options include:
 
 - Font family
 - Font size
@@ -148,7 +114,8 @@ Available options include:
 - Padding
 - Shadow
 - Banner position
-- Custom CSS
+- Editable light/dark background, text, accent, and border colors
+- Device-based color mode
 
 ## Privacy
 
@@ -161,17 +128,21 @@ The plugin:
 - Does not require an external account
 - Does not contain advertising
 - Does not track visitors for its own purposes
-- Stores consent preferences locally where possible
+- Stores visitor choices in browser local storage; choices are not sent to the plugin's server
+- Does not automatically discover cookies or verify that a site's configuration is complete
 
 ## Developer Features
 
 OpenConsent EU is designed to be extensible.
 
-Future developer features may include:
+Available developer extension points include:
 
-- WordPress PHP hooks
-- WordPress filters
-- JavaScript events
+- The `openconsent_eu_categories` PHP filter
+- The `openconsent:consent-changed` browser event
+
+Further developer features may include:
+
+- Additional WordPress PHP hooks and filters
 - Custom consent categories
 - Custom integrations
 - REST API support
@@ -185,12 +156,10 @@ OpenConsent EU checks the public GitHub repository for its latest stable release
 
 To publish an update, create a published, non-prerelease GitHub release with a version tag such as:
 
-```text
 v1.0.0
 v1.0.1
 v1.1.0
 v2.0.0
-```
 
 Use a tag that matches the release version (for example, `v0.1.1` for version `0.1.1`). WordPress downloads GitHub's generated source archive for that release.
 
@@ -249,18 +218,17 @@ The `main` branch is protected and should not receive unreviewed direct changes.
 
 Planned features may include:
 
-- [ ] Initial cookie consent banner
-- [ ] Consent categories
-- [ ] Script blocking
-- [ ] Preference center
-- [ ] Consent versioning
-- [ ] Appearance customizer
-- [ ] Accessibility improvements
+- [x] Initial cookie consent banner and preference center
+- [x] Built-in consent categories
+- [x] Configured WordPress script blocking
+- [x] Consent versioning and expiry
+- [x] Appearance customizer
+- [x] Keyboard-operable consent controls
 - [x] GitHub updater
-- [ ] Google Consent Mode support
+- [x] Optional Google Consent Mode v2 signals
 - [ ] Multilingual support
 - [ ] Cookie scanner
-- [ ] Cookie/service database
+- [ ] Managed cookie and service catalogue
 - [ ] Regional compliance profiles
 - [ ] Developer API
 - [ ] WP-CLI support
@@ -289,7 +257,7 @@ Legal requirements can vary between EU member states and may change over time.
 
 OpenConsent EU is free and open-source software licensed under:
 
-**GNU General Public License v2.0 or later (GPL-2.0-or-later)**
+**GNU General Public License v3.0 or later (GPL-3.0-or-later)**
 
 See the `LICENSE` file for the full license.
 
