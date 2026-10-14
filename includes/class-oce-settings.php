@@ -24,6 +24,13 @@ final class OCE_Settings
         add_action('admin_init', array(__CLASS__, 'register_settings'));
         add_action('admin_menu', array(__CLASS__, 'add_settings_page'));
         add_action('admin_enqueue_scripts', array(__CLASS__, 'enqueue_admin_styles'));
+        add_action('admin_head', array(__CLASS__, 'print_menu_icon_style'));
+    }
+
+    // Core sizes URL menu icons by the image itself; ours is 1000x1000, so cap it at the standard 20px on every admin page.
+    public static function print_menu_icon_style()
+    {
+        echo '<style>#adminmenu .toplevel_page_openconsent-eu .wp-menu-image img{width:20px;height:20px;box-sizing:content-box;padding:0;margin:7px 8px;opacity:1}</style>';
     }
 
     public static function register_settings()

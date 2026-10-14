@@ -253,6 +253,11 @@ oce_assert(strpos($banner, 'target="_blank"') !== false && strpos($banner, 'rel=
 oce_assert(strpos($banner, 'javascript:alert') === false, 'unsafe visitor resource URLs are never rendered');
 oce_assert(strpos($banner, 'Consent controls provided by OpenConsent EU') !== false, 'optional neutral attribution renders when enabled');
 
+$GLOBALS['oce_options'] = array();
+$fresh = OCE_Categories::get_all();
+oce_assert($fresh['analytics']['enabled'] === true && $fresh['marketing']['enabled'] === true, 'optional categories are offered on a fresh install');
+oce_assert($GLOBALS['oce_actions']['admin_head'] === array('OCE_Settings', 'print_menu_icon_style'), 'menu icon size style is registered for every admin page');
+
 $GLOBALS['oce_options'][OCE_Settings::OPTION_GENERAL] = array('consent_version' => '1', 'expiry_days' => 180, 'script_handles' => 'analytics:analytics');
 $GLOBALS['oce_options'][OCE_Settings::OPTION_CATEGORIES] = array('analytics' => array('label' => 'Analytics', 'description' => 'Usage statistics', 'enabled' => false));
 $categories = OCE_Categories::get_all();

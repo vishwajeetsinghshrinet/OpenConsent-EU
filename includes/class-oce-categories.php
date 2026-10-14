@@ -64,7 +64,9 @@ final class OCE_Categories
             }
 
             $defaults[$key]['script_mapped'] = isset($mapped_categories[$key]);
-            $defaults[$key]['enabled'] = $category['required'] || (isset($saved[$key]['enabled']) && !empty($saved[$key]['enabled'])) || isset($mapped_categories[$key]);
+            // Fall back to the default when nothing is saved yet (fresh install, never saved).
+            $enabled = isset($saved[$key]['enabled']) ? !empty($saved[$key]['enabled']) : $category['enabled'];
+            $defaults[$key]['enabled'] = $category['required'] || $enabled || isset($mapped_categories[$key]);
         }
 
         return $defaults;

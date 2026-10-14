@@ -11,6 +11,8 @@ All notable changes to OpenConsent EU will be documented here.
 - Added PHP settings and headless-browser test harnesses.
 - Hardened dialog fallback closing, reliable focus restoration, and queued script activation timeouts.
 - Prevented administrators from disabling a category while it still has configured script mappings.
+- Fixed the oversized admin menu icon by capping it at 20px on every admin page.
+- Fixed optional categories being hidden from visitors on a fresh install before settings were first saved.
 
 ## [1.0.0] - Initial Release
 
